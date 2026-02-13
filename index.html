@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoBin | Advanced E-Waste Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #3b82f6;
+            --bg-color: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255,255,255,0.5);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.02);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem 3rem;
+            overflow-y: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .header-title p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* Glassmorphism Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-icon {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            color: rgba(16, 185, 129, 0.15);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 10px 0;
+            color: var(--text-main);
+        }
+
+        /* Bin Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            border-radius: 10px;
+            transition: width 1s ease-in-out, background-color 0.5s ease;
+        }
+
+        /* Action Section */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Badges */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-safe { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+            .action-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; flex-direction: row; justify-content: space-between; padding: 1rem; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.5); }
+            .nav-item { display: none; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-microchip"></i> EcoBin App
+        </div>
+        <div class="nav-item active"><i class="fa-solid fa-chart-pie"></i> Dashboard</div>
+        <div class="nav-item"><i class="fa-solid fa-map-location-dot"></i> Locate Bins</div>
+        <div class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</div>
+        <div class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> History</div>
+        <div class="nav-item" style="margin-top: auto;"><i class="fa-solid fa-gear"></i> Settings</div>
+    </nav>
+
+    <main class="main-content">
+        <header>
+            <div class="header-title">
+                <h1>System Overview</h1>
+                <p>Real-time analytics for your Smart E-Waste Bin</p>
+            </div>
+            <div>
+                <button class="btn" style="width: auto; padding: 10px 20px; background: white; color: var(--text-main); border: 1px solid #e2e8f0;" onclick="resetData()">
+                    <i class="fa-solid fa-rotate-right"></i> Reset System
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <i class="fa-solid fa-trash-can card-icon"></i>
+                <h3 style="font-size: 1rem; color: var(--text-light);">Primary Bin Status</h3>
+                <div class="stat-value" id="bin-percentage-text">0%</div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="badge" id="bin-status-badge">Calculating...</span>
+                    <span style="font-size: 0.85rem; color: var(--text-light);" id="total-weight-text">0 / 50 kg</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="bin-progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <i class="fa-solid fa-leaf card-icon" style="color: rgba(59, 130, 246, 0.15);"></i>
+                <h3 style="font-size: 1rem; color: var(--text-light);">Eco Rewards Earned</h3>
+                <div class="stat-value" id="points-text" style="color: var(--secondary);">0</div>
+                <p style="font-size: 0.85rem; color: var(--text-light);">Redeemable for gift cards & discounts</p>
+            </div>
+
+            <div class="card">
+                <i class="fa-solid fa-network-wired card-icon" style="color: rgba(245, 158, 11, 0.15);"></i>
+                <h3 style="font-size: 1rem; color: var(--text-light);">Network Status</h3>
+                <div class="stat-value">Online</div>
+                <p style="font-size: 0.85rem; color: var(--text-light);"><i class="fa-solid fa-circle-check" style="color: var(--primary);"></i> Connected to IoT Server</p>
+            </div>
+        </div>
+
+        <div class="action-grid">
+            <div class="card">
+                <h2 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Simulate Deposit</h2>
+                <form id="deposit-form">
+                    <div class="form-group">
+                        <label>E-Waste Category</label>
+                        <select id="waste-type" required>
+                            <option value="" disabled selected>Select category...</option>
+                            <option value="smartphone">Smartphones & Tablets (150 pts/kg)</option>
+                            <option value="laptop">Laptops & PCs (100 pts/kg)</option>
+                            <option value="battery">Batteries & Chargers (200 pts/kg)</option>
+                            <option value="cable">Wires & Cables (50 pts/kg)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Weight (in kg)</label>
+                        <input type="number" id="waste-weight" step="0.1" min="0.1" max="50" placeholder="e.g. 1.5" required>
+                    </div>
+                    <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Drop in Bin</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Collection Analytics</h2>
+                <canvas id="analyticsChart" style="max-height: 250px;"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // System Constants
+        const MAX_BIN_CAPACITY = 50; // Max kg the bin can hold
+        const REWARD_RATES = {
+            smartphone: 150,
+            laptop: 100,
+            battery: 200,
+            cable: 50
+        };
+
+        // Initialize State from LocalStorage or default
+        let appState = JSON.parse(localStorage.getItem('ecoBinState')) || {
+            currentWeight: 0,
+            totalPoints: 0,
+            chartData: [0, 0, 0, 0, 0, 0, 0] // 7 days dummy data
+        };
+
+        // DOM Elements
+        const binProgress = document.getElementById('bin-progress-bar');
+        const binText = document.getElementById('bin-percentage-text');
+        const weightText = document.getElementById('total-weight-text');
+        const statusBadge = document.getElementById('bin-status-badge');
+        const pointsText = document.getElementById('points-text');
+        const form = document.getElementById('deposit-form');
+        
+        let chartInstance = null;
+
+        // Initialize App
+        function initApp() {
+            updateDashboardUI();
+            initChart();
+        }
+
+        // Update Dashboard Elements
+        function updateDashboardUI() {
+            // Calculate Percentage
+            let percentage = (appState.currentWeight / MAX_BIN_CAPACITY) * 100;
+            if(percentage > 100) percentage = 100; // Cap at 100%
+
+            // Update Text & Bars
+            binText.innerText = Math.round(percentage) + '%';
+            weightText.innerText = `${appState.currentWeight.toFixed(1)} / ${MAX_BIN_CAPACITY} kg`;
+            binProgress.style.width = percentage + '%';
+            
+            // Animate points
+            animateValue(pointsText, parseInt(pointsText.innerText), appState.totalPoints, 1000);
+
+            // Update Colors & Badges based on fill level
+            binProgress.style.background = 'var(--primary)';
+            statusBadge.className = 'badge badge-safe';
+            statusBadge.innerText = 'Safe Level';
+
+            if (percentage >= 85) {
+                binProgress.style.background = 'var(--danger)';
+                statusBadge.className = 'badge badge-danger';
+                statusBadge.innerText = 'Critical - Pickup Needed';
+            } else if (percentage >= 60) {
+                binProgress.style.background = 'var(--warning)';
+                statusBadge.className = 'badge badge-warning';
+                statusBadge.innerText = 'Filling Fast';
+            }
+        }
+
+        // Handle Form Submit (Simulating Hardware Sensor)
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const type = document.getElementById('waste-type').value;
+            const weight = parseFloat(document.getElementById('waste-weight').value);
+
+            if(appState.currentWeight + weight > MAX_BIN_CAPACITY) {
+                alert("Alert: Bin capacity exceeded! Cannot accept this item.");
+                return;
+            }
+
+            // Calculate new values
+            const earnedPoints = weight * REWARD_RATES[type];
+            appState.currentWeight += weight;
+            appState.totalPoints += Math.round(earnedPoints);
+
+            // Update Chart (Add to today's data)
+            appState.chartData[6] += weight;
+
+            // Save & Render
+            saveState();
+            updateDashboardUI();
+            updateChart();
+            
+            // Reset Form
+            form.reset();
+        });
+
+        // Chart.js Setup
+        function initChart() {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'],
+                    datasets: [{
+                        label: 'E-Waste Collected (kg)',
+                        data: appState.chartData,
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            chartInstance.data.datasets[0].data = appState.chartData;
+            chartInstance.update();
+        }
+
+        // Utilities
+        function saveState() {
+            localStorage.setItem('ecoBinState', JSON.stringify(appState));
+        }
+
+        function resetSystem() {
+            if(confirm("Are you sure you want to empty the bin and reset the system?")) {
+                appState = { currentWeight: 0, totalPoints: 0, chartData: [5, 2, 8, 3, 6, 4, 0] };
+                saveState();
+                updateDashboardUI();
+                updateChart();
+            }
+        }
+
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) { window.requestAnimationFrame(step); }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Bind Reset Button to Window object
+        window.resetData = resetSystem;
+
+        // Run on load
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
